@@ -13,27 +13,50 @@ int dataPin = 5;
 int clockPin = 4;
 // Don't forget to connect the ground wire to Arduino ground,
 // and the +5V wire to a +5V supply
-int PINS = 13;
+int PINS = 50;
+
+boolean pattern_rotate = 0;
 
 // Set the first variable to the NUMBER of pixels. 25 = 25 pixels in a row
 WS2801 strip = WS2801(PINS, dataPin, clockPin);
 
-static unsigned int masterWait = 60000;
+static unsigned int masterWait = 30000;
 
 // Allow dynamic functions
 typedef void (*function) ();
 
 // Dynamic function list.
-function arrOfFunctions[4] = {&flames, &alternate, &heartBeat, &bounce};
+// NOTE: patttern (p) limiter in loop().
+function arrOfFunctions[2] = {&alternate, &bounce};
+//function arrOfFunctions[4] = {&flames, &alternate, &heartBeat, &bounce};
 
-uint32_t c = Color(255,0,100);
-uint32_t c2 = Color(20, 20, 20);
+uint32_t c = Color(255, 0, 100);
+uint32_t c2 = Color(0, 0, 0);
 
 uint32_t c3 = Color(200, 0, 200);
 uint32_t c4 = Color(0, 200, 0);
 uint32_t c5 = Color(0, 0, 0);
 
-uint8_t wait = 100;
+int dim = 230; // 0 - 255
+uint32_t rotate_colors[6] = {
+  Color(1*dim     , 0         , 0         ),  // RED
+  Color(1*dim     , 0.2706*dim, 0         ),  // ORANGE
+  Color(1*dim     , 0.7059*dim, 0         ),  // YELLOW
+  Color(0         , 1*dim     , 0         ),  // GREEN
+  Color(0         , 0         , 1*dim     ),  // BLUErrrrrrrrrrrrrrr
+  Color(0.7157*dim, 0.0255*dim, 0.5647*dim)   // PURPLE
+/*
+  Color(255, 0, 0),
+  Color(225, 110, 25),
+  Color(255, 215, 57),
+  Color(75, 185, 100),
+  Color(45, 150, 235),
+  Color(255, 80, 140),
+*/
+};
+int rotate_color_index = 0;
+
+uint8_t wait = 30;
 
 int p = 0;
 int priorHeight = 0;
@@ -50,7 +73,15 @@ void setup() {
 
 
 void loop() {
-/*
+    // Rotate colors.
+    c = rotate_colors[rotate_color_index];
+    rotate_color_index++;
+    if (rotate_color_index >= 6) {
+      rotate_color_index = 0;
+    }
+
+  if(pattern_rotate) {
+
     if( (long)( millis() - lWaitMillis ) >= 0) {
       
       //Rollover has occured...
@@ -67,15 +98,18 @@ void loop() {
     }
     
     // Keep within available function list.
-    if (p >= 5) {
+    if (p >= 2) {
       p = 0;
     }
-*/
-
-bounce();
-//flames();
-//heartBeat();
-//alternate();
+  }
+  else {
+   
+    //bounce();
+    //flames();
+    //heartBeat();
+    alternate();
+    
+  }
 
 }
 
@@ -196,6 +230,7 @@ void bounce() {
 
 // Chasing Pattern.
 void alternate() {
+  
   int i, j;
   int interval = 7;
   uint8_t wait = 170;
